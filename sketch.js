@@ -13,9 +13,9 @@
 */
 
 let gamestate = {
-    startTime: Date.now(),
-    time: Date.now(),
-    timerIsRunning: true,
+    startTime: 0,
+    time: 0,
+    timerIsRunning: false,
     paused: false,
     elementList: [],
     currentElement: "Press Timer To Start"
@@ -23,7 +23,6 @@ let gamestate = {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-    startRound()
 }
 
 function draw() {
@@ -42,23 +41,24 @@ function draw() {
 
 let drawTimer = (startTime, isRunning) => {
     let now = Date.now()
-    let timeElapsed = now - startTime
+    let timeElapsed = roundTwoPlaces((now - startTime) / 1000) // In ms
   let timer = new Clickable();
 
   timer.locate(windowWidth * 0.37, windowHeight * .24);
   timer.resize(windowWidth * 0.125 , windowHeight / 10);
   timer.color = "blue";
-  timer.text = roundTwoPlaces(timeElapsed / 1000);
+  timer.text = gamestate.paused ? "Paused" : isRunning ? timeElapsed : timeElapsed > 0 ? timeElapsed < 60 ? 60 : gamestate.time : "Start"
   timer.textSize = windowHeight / 16;
 
-  // Stop the timer when you have found all elements
-  if ( timeElapsed > 0 && gamestate.elementList.length === 0) {
+  // Stop the timer when you have found all elements or you run out of time
+  if ( isRunning && (timeElapsed > 0 && gamestate.elementList.length === 0 || timeElapsed >= 60)) {
     gamestate.timerIsRunning = false;
+        gamestate.time = timeElapsed
   }
 
   // Handle starts and resets
   timer.onPress = () => {
-    if (gamestate.timerIsRunning && gamestate.elementList.length > 0) {
+    if (isRunning && gamestate.elementList.length > 0) {
       gamestate.paused = true;
       gamestate.timerIsRunning = false;
     } else if (gamestate.paused) {
@@ -74,7 +74,7 @@ let drawTimer = (startTime, isRunning) => {
   // Draw the text "Seconds"
   textSize(24);
   fill("white");
-  text("seconds", windowWidth * .54, windowHeight * .30);
+  text(gamestate.paused ? "" : "seconds", windowWidth * .54, windowHeight * .30);
   fill("black");
 
   timer.draw();
@@ -89,13 +89,8 @@ let drawElementToFind = () => {
   rect(windowWidth * .425, 110, windowWidth / 2.25, 150, 10);
   fill("black");
   textSize(windowHeight / 14);
-  // text(
-    // gamestate.timerIsRunning ? gamestate.currentElement : "Press Timer To Start",
-    // windowWidth * .425,
-    // 130
-  // );
   text(
-    gamestate.currentElement,
+    gamestate.paused ? "Press Timer To Resume" : gamestate.timerIsRunning ? gamestate.currentElement : "Press Timer To Start",
     windowWidth * .425,
     130
   );
