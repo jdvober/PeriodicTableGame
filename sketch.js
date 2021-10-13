@@ -12,62 +12,62 @@
 
 */
 
-let time = 0;
-let timerIsRunning = false;
-let paused = false;
-let elementList = [];
-let currentElement;
+let gamestate = {
+    startTime: Date.now(),
+    time: Date.now(),
+    timerIsRunning: true,
+    paused: false,
+    elementList: [],
+    currentElement: "Press Timer To Start"
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // startRound()
+    startRound()
 }
 
 function draw() {
   background(64);
 
   // Draw each element box
-  if (!paused) {
+  if (!gamestate.paused) {
     elements.forEach((e) => drawEl(e));
   }
 
   // Draw the timer
-  drawTimer(roundTwoPlaces(time), false);
-
-  if (timerIsRunning) {
-    time += 1 / 60;
-  }
+  drawTimer(roundTwoPlaces(gamestate.startTime), gamestate.timerIsRunning);
 
   drawElementToFind();
 }
 
-let drawTimer = (time, isRunning) => {
+let drawTimer = (startTime, isRunning) => {
+    let now = Date.now()
+    let timeElapsed = now - startTime
   let timer = new Clickable();
 
   timer.locate(windowWidth * 0.37, windowHeight * .24);
   timer.resize(windowWidth * 0.125 , windowHeight / 10);
-  timer.color = "red";
-  timer.text = time;
-  timer.textSize = 32;
+  timer.color = "blue";
+  timer.text = roundTwoPlaces(timeElapsed / 1000);
+  timer.textSize = windowHeight / 16;
 
   // Stop the timer when you have found all elements
-  if (time > 0 && elementList.length === 0) {
-    timerIsRunning = false;
+  if ( timeElapsed > 0 && gamestate.elementList.length === 0) {
+    gamestate.timerIsRunning = false;
   }
 
   // Handle starts and resets
   timer.onPress = () => {
-    // console.log("Timer Pressed");
-    if (timerIsRunning && elementList.length > 0) {
-      paused = true;
-      timerIsRunning = false;
-    } else if (paused) {
-      paused = false;
-      timerIsRunning = true;
+    if (gamestate.timerIsRunning && gamestate.elementList.length > 0) {
+      gamestate.paused = true;
+      gamestate.timerIsRunning = false;
+    } else if (gamestate.paused) {
+      gamestate.paused = false;
+      gamestate.timerIsRunning = true;
     } else {
       // Start a new round instead of pausing
       startRound();
-      timerIsRunning = true;
+      gamestate.timerIsRunning = true;
     }
   };
 
@@ -88,9 +88,14 @@ let drawElementToFind = () => {
   strokeWeight(3);
   rect(windowWidth * .425, 110, windowWidth / 2.25, 150, 10);
   fill("black");
-  textSize(windowHeight / 17);
+  textSize(windowHeight / 14);
+  // text(
+    // gamestate.timerIsRunning ? gamestate.currentElement : "Press Timer To Start",
+    // windowWidth * .425,
+    // 130
+  // );
   text(
-    timerIsRunning ? currentElement : "Press timer to start",
+    gamestate.currentElement,
     windowWidth * .425,
     130
   );
@@ -111,12 +116,6 @@ let getNewElement = (elList) => {
 };
 
 let getUpdatedElementList = (newElement, oldList) => {
-  // console.log(
-  //   oldList
-  //     .filter((el) => el.name !== newElement)
-  //     .forEach((el) => console.log(el.name))
-  // );
-
   return oldList.filter((el) => el.name !== newElement);
 };
 
@@ -132,23 +131,17 @@ let drawEl = (elem) => {
   el.resize(w, h); // resize button
   el.text = elem.symbol;
   el.color = elem.color;
-  el.textSize = 28;
+  el.textSize = windowHeight / 19;
   el.textScaled = true; // scales the text with the button
 
   el.onPress = () => {
-    //   console.log(
-    //     "Chose " + elem.name + " (Current Element is " + currentElement + ")"
-    //   );
-
     // When the student chooses the correct element, get a new one.
-    if (elem.name === currentElement) {
-      currentElement = getNewElement(elementList);
-
-      // console.log("Chose Correct Element");
+    if (elem.name === gamestate.currentElement) {
+      gamestate.currentElement = getNewElement(gamestate.elementList);
 
       // Update the element list to remove the new element
 
-      elementList = getUpdatedElementList(currentElement, elementList);
+      gamestate.elementList = getUpdatedElementList(gamestate.currentElement, gamestate.elementList);
     }
   };
 
@@ -170,10 +163,10 @@ let createElementList = () => {
 };
 
 let startRound = () => {
-  elementList = createElementList();
-  currentElement = getNewElement(elementList);
-  elementList = getUpdatedElementList(currentElement, elementList);
-  time = 0;
+  gamestate.elementList = createElementList();
+  gamestate.currentElement = getNewElement(gamestate.elementList);
+  gamestate.elementList = getUpdatedElementList(gamestate.currentElement, gamestate.elementList);
+  gamestate.startTime = Date.now();
 };
 
 let elements = [
