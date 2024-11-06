@@ -261,21 +261,27 @@ let setElementSet = () => {
 	switch (elementSetDropdown.value()) {
 		case "First 10 Elements":
 			gamestate.elementList = elementSetFirst10
+			gamestate.selectedElementSet = elementSetFirst10
 			break
 		case "First 18 Elements":
 			gamestate.elementList = elementSetFirst18
+			gamestate.selectedElementSet = elementSetFirst18
 			break
 		case "First 36 Elements":
 			gamestate.elementList = elementSetFirst36
+			gamestate.selectedElementSet = elementSetFirst36
 			break
 		case "Common Elements":
 			gamestate.elementList = elementSetCommonElements
+			gamestate.selectedElementSet = elementSetCommonElements
 			break
 		case "All Elements":
 			gamestate.elementList = elementSetAll
+			gamestate.selectedElementSet = elementSetAll
 			break
 		default:
 			gamestate.elementList = elementSetCommonElements
+			gamestate.selectedElementSet = elementSetCommonElements
 	}
 }
 
