@@ -17,6 +17,26 @@ let gamestate = {
 	paused: false,
 	elementList: [],
 	currentElement: "Press Timer To Start",
+	selectedElementSet: [
+		"H",
+		"He",
+		"Li",
+		"Be",
+		"B",
+		"C",
+		"N",
+		"O",
+		"F",
+		"Ne",
+		"Na",
+		"Mg",
+		"Al",
+		"Si",
+		"P",
+		"S",
+		"Cl",
+		"Ar",
+	],
 }
 
 let soundCorrect
@@ -42,6 +62,10 @@ function draw() {
 	drawTimer(roundTwoPlaces(gamestate.startTime), gamestate.timerIsRunning)
 
 	drawElementToFind()
+
+	if (!gamestate.timerIsRunning) {
+		setElementSet()
+	}
 }
 
 let drawTimer = (startTime, isRunning) => {
@@ -70,8 +94,10 @@ let drawTimer = (startTime, isRunning) => {
 			? timeElapsed
 			: timeElapsed > 0
 			? timeElapsed < 60
-				? 60
-				: gamestate.time
+				? gamestate.time
+				: gamestate.previousTime === 0
+				? gamestate.time
+				: 60
 			: "Start"
 	timer.textSize = height / 16
 
@@ -185,7 +211,11 @@ let drawEl = (elem) => {
 	el.locate(x, y) // set position
 	el.resize(w, h) // resize button
 	el.text = elem.symbol
-	el.color = elem.color
+
+	el.color =
+		gamestate.selectedElementSet.indexOf(elem.symbol) != -1
+			? elem.color
+			: "#3c484b"
 	el.textSize = height / 24
 	el.textScaled = true // scales the text with the button
 
@@ -240,6 +270,9 @@ let setElementSet = () => {
 			break
 		case "Common Elements":
 			gamestate.elementList = elementSetCommonElements
+			break
+		case "All Elements":
+			gamestate.elementList = elementSetAll
 			break
 		default:
 			gamestate.elementList = elementSetCommonElements
@@ -1412,4 +1445,296 @@ let elementSetCommonElements = [
 	"Cf",
 	"Es",
 ]
-let elementSetAll = elements.forEach((e) => e.symbol)
+let elementSetAll = [
+	//
+	//
+	// Period 1
+	//
+	//
+
+	"H",
+
+	"He",
+
+	//
+	//
+	// Period 2
+	//
+	//
+
+	"Li",
+
+	"Be",
+
+	"B",
+
+	"C",
+
+	"N",
+
+	"O",
+
+	"F",
+
+	"Ne",
+
+	//
+	//
+	// Period 3
+	//
+	//
+
+	"Na",
+
+	"Mg",
+
+	"Al",
+
+	"Si",
+
+	"P",
+
+	"S",
+
+	"Cl",
+
+	"Ar",
+
+	//
+	//
+	// Period 4
+	//
+	//
+
+	"K",
+
+	"Ca",
+
+	"Sc",
+
+	"Ti",
+
+	"V",
+
+	"Cr",
+
+	"Mn",
+
+	"Fe",
+
+	"Co",
+
+	"Ni",
+
+	"Cu",
+
+	"Zn",
+
+	"Si",
+
+	"Ga",
+
+	"Ge",
+
+	"As",
+
+	"Se",
+
+	"Br",
+
+	"Kr",
+
+	//
+	//
+	// Period 5
+	//
+	//
+
+	"Rb",
+
+	"Sr",
+
+	"Y",
+
+	"Zr",
+
+	"Nb",
+
+	"Mo",
+
+	"Tc",
+
+	"Ru",
+
+	"Rh",
+
+	"Pd",
+
+	"Ag",
+
+	"Cd",
+
+	"In",
+
+	"Sn",
+
+	"Sb",
+
+	"Te",
+
+	"I",
+
+	"Xe",
+
+	//
+	//
+	// Period 6
+	//
+	//
+
+	"Cs",
+
+	"Ba",
+
+	"Hf",
+
+	"Ta",
+
+	"W",
+
+	"Re",
+
+	"Os",
+
+	"Ir",
+
+	"Pt",
+
+	"Au",
+
+	"Hg",
+
+	"Tl",
+
+	"Pb",
+
+	"Bi",
+
+	"Po",
+
+	"At",
+
+	"Rn",
+
+	//
+	//
+	// Period 7
+	//
+	//
+
+	"Fr",
+
+	"Ra",
+
+	"Rf",
+
+	"Db",
+
+	"Sg",
+
+	"Bh",
+
+	"Hs",
+
+	"Mt",
+
+	"Ds",
+
+	"Rg",
+
+	"Cn",
+
+	"Nh",
+
+	"Fl",
+
+	"Mc",
+
+	"Lv",
+
+	"Ts",
+
+	"Og",
+
+	//
+	//
+	// Lanthanides
+	//
+	//
+
+	"La",
+
+	"Ce",
+
+	"Pr",
+
+	"Nd",
+
+	"Pm",
+
+	"Sm",
+
+	"Eu",
+
+	"Gd",
+
+	"Tb",
+
+	"Dy",
+
+	"Ho",
+
+	"Er",
+
+	"Tm",
+
+	"Tb",
+
+	"Lu",
+
+	//
+	//
+	// Actinides
+	//
+	//
+
+	"Ac",
+
+	"Th",
+
+	"Pa",
+
+	"U",
+
+	"Np",
+
+	"Pu",
+
+	"Am",
+
+	"Cm",
+
+	"Bk",
+
+	"Cf",
+
+	"Es",
+
+	"Fm",
+
+	"Md",
+
+	"No",
+
+	"Lr",
+]
