@@ -264,9 +264,19 @@ let startRound = () => {
 	gamestate.startTime = Date.now()
 }
 
+// Disable Right Click
 document.oncontextmenu = () => {
 	return false
 }
+
+// Disable zoom
+document.addEventListener(
+	"touchmove",
+	(e) => {
+		e.preventDefault()
+	},
+	{ passive: false }
+)
 
 let elements = [
 	//

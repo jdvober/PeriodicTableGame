@@ -1,8 +1,13 @@
-html,
+/* Prevent pinch zoom */
+html {
+	height: 100%;
+	touch-action: pax-x pan-y;
+}
+
 body {
-  margin: 0;
-  padding: 0;
+	margin: 0;
+	padding: 0;
 }
 canvas {
-  display: block;
+	display: block;
 }
