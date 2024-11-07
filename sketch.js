@@ -1,14 +1,3 @@
-/*
-
-- Grayed out if not in set
-- Add Group Numbers
-- Scoring system
-  - Countdown timer instead
-- Add my voice for each element
-- Party Horn for start, police sirens for end, techno during?
-
-*/
-
 let gamestate = {
 	startTime: 0,
 	time: 0,
@@ -16,7 +5,9 @@ let gamestate = {
 	timerIsRunning: false,
 	paused: false,
 	elementList: [],
-	currentElement: "Press Timer To Start",
+	currentElementName: "Press Timer To Start",
+	currentElementLocation: "LEFT",
+	locationMode: false,
 	selectedElementSet: [
 		"H",
 		"He",
@@ -39,23 +30,22 @@ let gamestate = {
 	],
 }
 
-let soundCorrect
-
-function preload() {
-	soundCorrect = loadSound("./soundCorrect.mp3")
-}
+function preload() {}
 
 function setup() {
 	createCanvas(windowWidth, windowHeight)
 	createElementSetDropdown()
+	createLocationModeSlider()
 }
 
 function draw() {
 	background(64)
 
 	// Draw each element box
-	if (!gamestate.paused) {
+	if (!gamestate.paused && gamestate.locationMode != true) {
 		elements.forEach((e) => drawEl(e))
+	} else {
+		elements.forEach((e) => drawElBlank(e))
 	}
 
 	// Draw the timer
@@ -63,9 +53,19 @@ function draw() {
 
 	drawElementToFind()
 
+	drawLocationModeText()
+
 	if (!gamestate.timerIsRunning) {
 		setElementSet()
 	}
+}
+
+function loadSound() {
+	createjs.Sound.registerSound("./correct_guitar.wav", "soundCorrect1")
+	createjs.Sound.registerSound("./correct_guitar_2.wav", "soundCorrect2")
+	createjs.Sound.registerSound("./correct_guitar_3.wav", "soundCorrect3")
+	createjs.Sound.registerSound("./correct_guitar_4.wav", "soundCorrect4")
+	createjs.Sound.registerSound("./correct_guitar_5.wav", "soundCorrect5")
 }
 
 let drawTimer = (startTime, isRunning) => {
@@ -136,8 +136,14 @@ let drawTimer = (startTime, isRunning) => {
 	timer.draw()
 
 	// Draw the previous time above the current time
-	fill("lightGray")
-	text(gamestate.previousTime, windowWidth * 0.38, height * 0.23)
+	fill("darkGray")
+	text(`${gamestate.previousTime} seconds`, windowWidth * 0.44, height * 0.23)
+}
+
+let drawLocationModeText = () => {
+	fill("white")
+	textSize(16)
+	text("Location Mode", 385, 188)
 }
 
 let createElementSetDropdown = () => {
@@ -151,6 +157,32 @@ let createElementSetDropdown = () => {
 
 	// Set the default set
 	elementSetDropdown.selected("First 18 Elements")
+}
+
+let createLocationModeSlider = () => {
+	let div = createDiv()
+	div.class("slider-checkbox")
+	div.id("div-id")
+	div.position(275, 150)
+
+	let input = createInput()
+	input.id("location-check-box")
+	input.attribute("type", "checkbox")
+	input.parent("div-id")
+	input.mouseClicked(() => {
+		gamestate.locationMode === true
+			? (gamestate.locationMode = false)
+			: (gamestate.locationMode = true)
+	})
+
+	let label = createElement("label")
+	label.id("label-id")
+	label.attribute("for", "location-check-box")
+	label.parent("div-id")
+
+	let span = createElement("span")
+	span.id("ball")
+	span.parent("label-id")
 }
 
 let drawElementToFind = () => {
@@ -172,7 +204,7 @@ let drawElementToFind = () => {
 		gamestate.paused
 			? "Press Timer To Resume"
 			: gamestate.timerIsRunning
-			? gamestate.currentElement
+			? gamestate.currentElementName
 			: "Press Timer To Start",
 		windowWidth * 0.4,
 		height * 0.125 + height / 36
@@ -189,12 +221,13 @@ let getNewElement = (elList) => {
 	// Establish what the new element will be
 
 	return elList.length !== 0
-		? elList[getRandNumRange(0, elList.length - 1)].name
+		? // ? elList[getRandNumRange(0, elList.length - 1)].name
+		  elList[getRandNumRange(0, elList.length - 1)]
 		: "Done"
 }
 
-let getUpdatedElementList = (newElement, oldList) => {
-	return oldList.filter((el) => el.name !== newElement)
+let getUpdatedElementList = (newElementName, oldList) => {
+	return oldList.filter((el) => el.name !== newElementName)
 }
 
 let drawEl = (elem) => {
@@ -221,14 +254,63 @@ let drawEl = (elem) => {
 
 	el.onPress = () => {
 		// When the student chooses the correct element, get a new one.
-		if (elem.name === gamestate.currentElement) {
-			// playCorrect()
-			gamestate.currentElement = getNewElement(gamestate.elementList)
+		if (elem.name === gamestate.currentElementName) {
+			playCorrect()
+			gamestate.currentElementName = getNewElement(
+				gamestate.elementList
+			).name
 
 			// Update the element list to remove the new element
 
 			gamestate.elementList = getUpdatedElementList(
-				gamestate.currentElement,
+				gamestate.currentElementName,
+				gamestate.elementList
+			)
+		}
+	}
+
+	el.draw()
+}
+
+let drawElBlank = (elem) => {
+	let a = width / 19 / 19
+	let b = width / 19
+	let w = b
+	let h = height * 0.09
+	let x = a * elem.group + (elem.group - 1) * b
+	let y = elem.period * (9 * (height * 0.0105))
+
+	// Using p5.clickable lib
+	let el = new Clickable()
+	el.locate(x, y) // set position
+	el.resize(w, h) // resize button
+	el.text = ""
+
+	el.color =
+		gamestate.selectedElementSet.indexOf(elem.symbol) != -1
+			? elem.location === "LEFT"
+				? "red"
+				: elem.location === "MIDDLE"
+				? "green"
+				: elem.location === "RARE_EARTH"
+				? "purple"
+				: "cyan"
+			: "#3c484b"
+	el.textSize = height / 24
+	el.textScaled = true // scales the text with the button
+
+	el.onPress = () => {
+		// When the student chooses the correct element, get a new one.
+		if (elem.location === gamestate.currentElementLocation) {
+			playCorrect()
+			let newElement = getNewElement(gamestate.elementList)
+			gamestate.currentElementName = newElement.name
+			gamestate.currentElementLocation = newElement.location
+
+			// Update the element list to remove the new element
+
+			gamestate.elementList = getUpdatedElementList(
+				gamestate.currentElementName,
 				gamestate.elementList
 			)
 		}
@@ -254,7 +336,27 @@ let createElementList = (elementSet) => {
 }
 
 let playCorrect = () => {
-	soundCorrect.play(0, 1, 1, 0, 1.25) // startTime, rate, amp, cueStart, duration
+	// let audio
+	switch (gamestate.elementList.length) {
+		case 5:
+			createjs.Sound.play("soundCorrect1")
+			break
+		case 4:
+			createjs.Sound.play("soundCorrect2")
+			break
+		case 3:
+			createjs.Sound.play("soundCorrect3")
+			break
+		case 2:
+			createjs.Sound.play("soundCorrect4")
+			break
+		case 1:
+			createjs.Sound.play("soundCorrect5")
+			break
+		default:
+			createjs.Sound.play("soundCorrect5")
+			break
+	}
 }
 
 let setElementSet = () => {
@@ -295,9 +397,11 @@ let startRound = () => {
 	setElementSet()
 
 	gamestate.elementList = createElementList(gamestate.elementList)
-	gamestate.currentElement = getNewElement(gamestate.elementList)
+	let newElement = getNewElement(gamestate.elementList)
+	gamestate.currentElementName = newElement.name
+	gamestate.currentElementLocation = newElement.location
 	gamestate.elementList = getUpdatedElementList(
-		gamestate.currentElement,
+		gamestate.currentElementName,
 		gamestate.elementList
 	)
 	gamestate.startTime = Date.now()
@@ -329,6 +433,7 @@ let elements = [
 		atomicNumber: 1,
 		period: 1,
 		group: 1,
+		location: "LEFT",
 		color: lightPurple,
 	},
 	{
@@ -337,6 +442,7 @@ let elements = [
 		atomicNumber: 2,
 		period: 1,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -351,6 +457,7 @@ let elements = [
 		period: 2,
 		group: 1,
 		color: "orange",
+		location: "LEFT",
 	},
 	{
 		name: "Beryllium",
@@ -358,6 +465,7 @@ let elements = [
 		atomicNumber: 4,
 		period: 2,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 	{
@@ -366,7 +474,7 @@ let elements = [
 		atomicNumber: 5,
 		period: 2,
 		group: 13,
-
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -375,6 +483,7 @@ let elements = [
 		atomicNumber: 6,
 		period: 2,
 		group: 14,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -383,6 +492,7 @@ let elements = [
 		atomicNumber: 7,
 		period: 2,
 		group: 15,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -391,6 +501,7 @@ let elements = [
 		atomicNumber: 8,
 		period: 2,
 		group: 16,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -399,6 +510,7 @@ let elements = [
 		atomicNumber: 9,
 		period: 2,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -407,6 +519,7 @@ let elements = [
 		atomicNumber: 9,
 		period: 2,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -420,6 +533,7 @@ let elements = [
 		atomicNumber: 11,
 		period: 3,
 		group: 1,
+		location: "LEFT",
 		color: "orange",
 	},
 	{
@@ -428,6 +542,7 @@ let elements = [
 		atomicNumber: 12,
 		period: 3,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 	{
@@ -436,6 +551,7 @@ let elements = [
 		atomicNumber: 13,
 		period: 3,
 		group: 13,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -444,6 +560,7 @@ let elements = [
 		atomicNumber: 14,
 		period: 3,
 		group: 14,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -452,6 +569,7 @@ let elements = [
 		atomicNumber: 15,
 		period: 3,
 		group: 15,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -460,6 +578,7 @@ let elements = [
 		atomicNumber: 16,
 		period: 3,
 		group: 16,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -468,6 +587,7 @@ let elements = [
 		atomicNumber: 17,
 		period: 3,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -476,6 +596,7 @@ let elements = [
 		atomicNumber: 18,
 		period: 3,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -489,6 +610,7 @@ let elements = [
 		atomicNumber: 19,
 		period: 4,
 		group: 1,
+		location: "LEFT",
 		color: "orange",
 	},
 	{
@@ -497,6 +619,7 @@ let elements = [
 		atomicNumber: 20,
 		period: 4,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 	{
@@ -505,6 +628,7 @@ let elements = [
 		atomicNumber: 21,
 		period: 4,
 		group: 3,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -513,6 +637,7 @@ let elements = [
 		atomicNumber: 22,
 		period: 4,
 		group: 4,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -521,6 +646,7 @@ let elements = [
 		atomicNumber: 23,
 		period: 4,
 		group: 5,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -529,6 +655,7 @@ let elements = [
 		atomicNumber: 24,
 		period: 4,
 		group: 6,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -537,6 +664,7 @@ let elements = [
 		atomicNumber: 25,
 		period: 4,
 		group: 7,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -545,6 +673,7 @@ let elements = [
 		atomicNumber: 26,
 		period: 4,
 		group: 8,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -553,6 +682,7 @@ let elements = [
 		atomicNumber: 27,
 		period: 4,
 		group: 9,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -561,6 +691,7 @@ let elements = [
 		atomicNumber: 29,
 		period: 4,
 		group: 10,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -569,6 +700,7 @@ let elements = [
 		atomicNumber: 29,
 		period: 4,
 		group: 11,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -577,6 +709,7 @@ let elements = [
 		atomicNumber: 30,
 		period: 4,
 		group: 12,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -585,6 +718,7 @@ let elements = [
 		atomicNumber: 14,
 		period: 4,
 		group: 14,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -593,6 +727,7 @@ let elements = [
 		atomicNumber: 31,
 		period: 4,
 		group: 13,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -601,6 +736,7 @@ let elements = [
 		atomicNumber: 32,
 		period: 4,
 		group: 14,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -609,6 +745,7 @@ let elements = [
 		atomicNumber: 33,
 		period: 4,
 		group: 15,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -617,6 +754,7 @@ let elements = [
 		atomicNumber: 34,
 		period: 4,
 		group: 16,
+		location: "RIGHT",
 		color: lightPurple,
 	},
 	{
@@ -625,6 +763,7 @@ let elements = [
 		atomicNumber: 35,
 		period: 4,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -633,6 +772,7 @@ let elements = [
 		atomicNumber: 36,
 		period: 4,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -646,6 +786,7 @@ let elements = [
 		atomicNumber: 37,
 		period: 5,
 		group: 1,
+		location: "LEFT",
 		color: "orange",
 	},
 	{
@@ -654,6 +795,7 @@ let elements = [
 		atomicNumber: 38,
 		period: 5,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 	{
@@ -662,6 +804,7 @@ let elements = [
 		atomicNumber: 39,
 		period: 5,
 		group: 3,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -670,6 +813,7 @@ let elements = [
 		atomicNumber: 40,
 		period: 5,
 		group: 4,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -678,6 +822,7 @@ let elements = [
 		atomicNumber: 41,
 		period: 5,
 		group: 5,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -686,6 +831,7 @@ let elements = [
 		atomicNumber: 42,
 		period: 5,
 		group: 6,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -694,6 +840,7 @@ let elements = [
 		atomicNumber: 43,
 		period: 5,
 		group: 7,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -702,6 +849,7 @@ let elements = [
 		atomicNumber: 45,
 		period: 5,
 		group: 8,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -710,6 +858,7 @@ let elements = [
 		atomicNumber: 27,
 		period: 5,
 		group: 9,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -718,6 +867,7 @@ let elements = [
 		atomicNumber: 46,
 		period: 5,
 		group: 10,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -726,6 +876,7 @@ let elements = [
 		atomicNumber: 47,
 		period: 5,
 		group: 11,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -734,6 +885,7 @@ let elements = [
 		atomicNumber: 48,
 		period: 5,
 		group: 12,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -742,6 +894,7 @@ let elements = [
 		atomicNumber: 49,
 		period: 5,
 		group: 13,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -750,6 +903,7 @@ let elements = [
 		atomicNumber: 50,
 		period: 5,
 		group: 14,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -758,6 +912,7 @@ let elements = [
 		atomicNumber: 51,
 		period: 5,
 		group: 15,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -766,6 +921,7 @@ let elements = [
 		atomicNumber: 52,
 		period: 5,
 		group: 16,
+		location: "RIGHT",
 		color: "lightGreen",
 	},
 	{
@@ -774,6 +930,7 @@ let elements = [
 		atomicNumber: 53,
 		period: 5,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -782,6 +939,7 @@ let elements = [
 		atomicNumber: 54,
 		period: 5,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -795,6 +953,7 @@ let elements = [
 		atomicNumber: 55,
 		period: 6,
 		group: 1,
+		location: "LEFT",
 		color: "orange",
 	},
 	{
@@ -803,6 +962,7 @@ let elements = [
 		atomicNumber: 56,
 		period: 6,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 
@@ -812,6 +972,7 @@ let elements = [
 		atomicNumber: 56,
 		period: 6,
 		group: 4,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -820,6 +981,7 @@ let elements = [
 		atomicNumber: 73,
 		period: 6,
 		group: 5,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -828,6 +990,7 @@ let elements = [
 		atomicNumber: 74,
 		period: 6,
 		group: 6,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -836,6 +999,7 @@ let elements = [
 		atomicNumber: 75,
 		period: 6,
 		group: 7,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -844,6 +1008,7 @@ let elements = [
 		atomicNumber: 76,
 		period: 6,
 		group: 8,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -852,6 +1017,7 @@ let elements = [
 		atomicNumber: 77,
 		period: 6,
 		group: 9,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -860,6 +1026,7 @@ let elements = [
 		atomicNumber: 78,
 		period: 6,
 		group: 10,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -868,6 +1035,7 @@ let elements = [
 		atomicNumber: 79,
 		period: 6,
 		group: 11,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -876,6 +1044,7 @@ let elements = [
 		atomicNumber: 80,
 		period: 6,
 		group: 12,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -884,6 +1053,7 @@ let elements = [
 		atomicNumber: 81,
 		period: 6,
 		group: 13,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -892,6 +1062,7 @@ let elements = [
 		atomicNumber: 82,
 		period: 6,
 		group: 14,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -900,6 +1071,7 @@ let elements = [
 		atomicNumber: 83,
 		period: 6,
 		group: 15,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -908,6 +1080,7 @@ let elements = [
 		atomicNumber: 84,
 		period: 6,
 		group: 16,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -916,6 +1089,7 @@ let elements = [
 		atomicNumber: 85,
 		period: 6,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -924,6 +1098,7 @@ let elements = [
 		atomicNumber: 86,
 		period: 6,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 	//
@@ -937,6 +1112,7 @@ let elements = [
 		atomicNumber: 87,
 		period: 7,
 		group: 1,
+		location: "LEFT",
 		color: "orange",
 	},
 	{
@@ -945,6 +1121,7 @@ let elements = [
 		atomicNumber: 88,
 		period: 7,
 		group: 2,
+		location: "LEFT",
 		color: "yellow",
 	},
 
@@ -954,6 +1131,7 @@ let elements = [
 		atomicNumber: 104,
 		period: 7,
 		group: 4,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -962,6 +1140,7 @@ let elements = [
 		atomicNumber: 105,
 		period: 7,
 		group: 5,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -970,6 +1149,7 @@ let elements = [
 		atomicNumber: 106,
 		period: 7,
 		group: 6,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -978,6 +1158,7 @@ let elements = [
 		atomicNumber: 107,
 		period: 7,
 		group: 7,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -986,6 +1167,7 @@ let elements = [
 		atomicNumber: 108,
 		period: 7,
 		group: 8,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -994,6 +1176,7 @@ let elements = [
 		atomicNumber: 109,
 		period: 7,
 		group: 9,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -1002,6 +1185,7 @@ let elements = [
 		atomicNumber: 110,
 		period: 7,
 		group: 10,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -1010,6 +1194,7 @@ let elements = [
 		atomicNumber: 111,
 		period: 7,
 		group: 11,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -1018,6 +1203,7 @@ let elements = [
 		atomicNumber: 112,
 		period: 7,
 		group: 12,
+		location: "MIDDLE",
 		color: lightBlue,
 	},
 	{
@@ -1026,6 +1212,7 @@ let elements = [
 		atomicNumber: 113,
 		period: 7,
 		group: 13,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -1034,6 +1221,7 @@ let elements = [
 		atomicNumber: 114,
 		period: 7,
 		group: 14,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -1042,6 +1230,7 @@ let elements = [
 		atomicNumber: 115,
 		period: 7,
 		group: 15,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -1050,6 +1239,7 @@ let elements = [
 		atomicNumber: 116,
 		period: 7,
 		group: 16,
+		location: "RIGHT",
 		color: lightYellow,
 	},
 	{
@@ -1058,6 +1248,7 @@ let elements = [
 		atomicNumber: 117,
 		period: 7,
 		group: 17,
+		location: "RIGHT",
 		color: "pink",
 	},
 	{
@@ -1066,6 +1257,7 @@ let elements = [
 		atomicNumber: 118,
 		period: 7,
 		group: 18,
+		location: "RIGHT",
 		color: "lightBlue",
 	},
 
@@ -1081,6 +1273,7 @@ let elements = [
 		atomicNumber: 57,
 		period: 8.5,
 		group: 4,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1089,6 +1282,7 @@ let elements = [
 		atomicNumber: 58,
 		period: 8.5,
 		group: 5,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1097,6 +1291,7 @@ let elements = [
 		atomicNumber: 59,
 		period: 8.5,
 		group: 6,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1105,6 +1300,7 @@ let elements = [
 		atomicNumber: 60,
 		period: 8.5,
 		group: 7,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1113,6 +1309,7 @@ let elements = [
 		atomicNumber: 61,
 		period: 8.5,
 		group: 8,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1121,6 +1318,7 @@ let elements = [
 		atomicNumber: 62,
 		period: 8.5,
 		group: 9,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1129,6 +1327,7 @@ let elements = [
 		atomicNumber: 63,
 		period: 8.5,
 		group: 10,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1137,6 +1336,7 @@ let elements = [
 		atomicNumber: 64,
 		period: 8.5,
 		group: 11,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1145,6 +1345,7 @@ let elements = [
 		atomicNumber: 65,
 		period: 8.5,
 		group: 12,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1153,6 +1354,7 @@ let elements = [
 		atomicNumber: 66,
 		period: 8.5,
 		group: 13,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1161,6 +1363,7 @@ let elements = [
 		atomicNumber: 67,
 		period: 8.5,
 		group: 14,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1169,6 +1372,7 @@ let elements = [
 		atomicNumber: 68,
 		period: 8.5,
 		group: 15,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1177,6 +1381,7 @@ let elements = [
 		atomicNumber: 69,
 		period: 8.5,
 		group: 16,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1185,6 +1390,7 @@ let elements = [
 		atomicNumber: 70,
 		period: 8.5,
 		group: 17,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 	{
@@ -1193,6 +1399,7 @@ let elements = [
 		atomicNumber: 71,
 		period: 8.5,
 		group: 18,
+		location: "RARE_EARTH",
 		color: lightRed,
 	},
 
@@ -1208,6 +1415,7 @@ let elements = [
 		atomicNumber: 89,
 		period: 9.5,
 		group: 4,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1216,6 +1424,7 @@ let elements = [
 		atomicNumber: 90,
 		period: 9.5,
 		group: 5,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1224,6 +1433,7 @@ let elements = [
 		atomicNumber: 91,
 		period: 9.5,
 		group: 6,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1232,6 +1442,7 @@ let elements = [
 		atomicNumber: 92,
 		period: 9.5,
 		group: 7,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1240,6 +1451,7 @@ let elements = [
 		atomicNumber: 93,
 		period: 9.5,
 		group: 8,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1248,6 +1460,7 @@ let elements = [
 		atomicNumber: 94,
 		period: 9.5,
 		group: 9,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1256,6 +1469,7 @@ let elements = [
 		atomicNumber: 95,
 		period: 9.5,
 		group: 10,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1264,6 +1478,7 @@ let elements = [
 		atomicNumber: 96,
 		period: 9.5,
 		group: 11,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1272,6 +1487,7 @@ let elements = [
 		atomicNumber: 97,
 		period: 9.5,
 		group: 12,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1280,6 +1496,7 @@ let elements = [
 		atomicNumber: 98,
 		period: 9.5,
 		group: 13,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1288,6 +1505,7 @@ let elements = [
 		atomicNumber: 99,
 		period: 9.5,
 		group: 14,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1296,6 +1514,7 @@ let elements = [
 		atomicNumber: 100,
 		period: 9.5,
 		group: 15,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1304,6 +1523,7 @@ let elements = [
 		atomicNumber: 101,
 		period: 9.5,
 		group: 16,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1312,6 +1532,7 @@ let elements = [
 		atomicNumber: 102,
 		period: 9.5,
 		group: 17,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 	{
@@ -1320,6 +1541,7 @@ let elements = [
 		atomicNumber: 103,
 		period: 9.5,
 		group: 18,
+		location: "RARE_EARTH",
 		color: lightBrown,
 	},
 ]
