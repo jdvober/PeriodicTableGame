@@ -30,12 +30,21 @@ let gamestate = {
 	],
 }
 
+let elementClickables = []
+let blankElementClickables = []
+
 function preload() {}
 
 function setup() {
 	createCanvas(windowWidth, windowHeight)
 	createElementSetDropdown()
 	createLocationModeSlider()
+	elementClickables = elements.map((e) => {
+		return createElementClickable(e)
+	})
+	blankElementClickables = elements.map((e) => {
+		return createBlankElementClickable(e)
+	})
 }
 
 function draw() {
@@ -43,9 +52,11 @@ function draw() {
 
 	// Draw each element box
 	if (!gamestate.paused && gamestate.locationMode != true) {
-		elements.forEach((e) => drawEl(e))
+		elementClickables.forEach((e) => {
+			e.draw()
+		})
 	} else {
-		elements.forEach((e) => drawElBlank(e))
+		blankElementClickables.forEach((e) => e.draw())
 	}
 
 	// Draw the timer
@@ -230,16 +241,16 @@ let getUpdatedElementList = (newElementName, oldList) => {
 	return oldList.filter((el) => el.name !== newElementName)
 }
 
-let drawEl = (elem) => {
+let createElementClickable = (elem) => {
 	let a = width / 19 / 19
 	let b = width / 19
 	let w = b
 	let h = height * 0.09
-	// let x = elem.group * (width / 19) + (width / 19)
 	let x = a * elem.group + (elem.group - 1) * b
 	let y = elem.period * (9 * (height * 0.0105))
 
 	// Using p5.clickable lib
+	// THIS IS CAUSING MEMORY LEAKS? If we use this in the draw loop, we keep making new objects.  Need to make all the objects in setup, then have a seperate function that draws everything in the array.
 	let el = new Clickable()
 	el.locate(x, y) // set position
 	el.resize(w, h) // resize button
@@ -269,10 +280,13 @@ let drawEl = (elem) => {
 		}
 	}
 
-	el.draw()
+	// This is what I was doing before, and it was causing memory issues
+	// el.draw()
+
+	return el
 }
 
-let drawElBlank = (elem) => {
+let createBlankElementClickable = (elem) => {
 	let a = width / 19 / 19
 	let b = width / 19
 	let w = b
@@ -316,7 +330,7 @@ let drawElBlank = (elem) => {
 		}
 	}
 
-	el.draw()
+	return el
 }
 
 let lightPurple = "#D400FF" //light purple
