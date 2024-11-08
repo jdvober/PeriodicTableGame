@@ -36,7 +36,7 @@ let blankElementClickables = []
 function preload() {}
 
 function setup() {
-	createCanvas(windowWidth, windowHeight)
+	createCanvas(window.innerWidth, windowHeight)
 	createElementSetDropdown()
 	createLocationModeSlider()
 	elementClickables = elements.map((e) => {
@@ -66,7 +66,9 @@ function draw() {
 
 	drawLocationModeText()
 
-	if (!gamestate.timerIsRunning) {
+	setElementSetDropdownPosition()
+
+	if (!gamestate.timerIsRunning && !gamestate.paused) {
 		setElementSet()
 	}
 }
@@ -84,8 +86,8 @@ let drawTimer = (startTime, isRunning) => {
 	let timeElapsed = roundTwoPlaces((now - startTime) / 1000) // In ms
 	let timer = new Clickable()
 
-	timer.locate(windowWidth * 0.37, height * 0.24)
-	timer.resize(windowWidth * 0.125, height / 10)
+	timer.locate(window.innerWidth * 0.37, window.innerHeight * 0.24)
+	timer.resize(window.innerWidth * 0.125, window.innerHeight / 10)
 	timer.color = "blue"
 	timer.textColor = "white"
 	timer.textScaled = true // Scales the text with the clickable
@@ -110,7 +112,11 @@ let drawTimer = (startTime, isRunning) => {
 				? gamestate.time
 				: 60
 			: "Start"
-	timer.textSize = height / 16
+
+	if (timer.text > 60) {
+		timer.text = 60
+	}
+	timer.textSize = window.innerHeight / 16
 
 	// Stop the timer when you have found all elements or you run out of time
 	if (
@@ -141,25 +147,32 @@ let drawTimer = (startTime, isRunning) => {
 	// Draw the text "Seconds"
 	textSize(24)
 	fill("white")
-	text(gamestate.paused ? "" : "seconds", windowWidth * 0.54, height * 0.3)
+	text(
+		gamestate.paused ? "" : "seconds",
+		window.innerWidth * 0.54,
+		window.innerHeight * 0.3
+	)
 	fill("black")
 
 	timer.draw()
 
 	// Draw the previous time above the current time
 	fill("darkGray")
-	text(`${gamestate.previousTime} seconds`, windowWidth * 0.44, height * 0.23)
+	text(
+		`${gamestate.previousTime} seconds`,
+		window.innerWidth * 0.44,
+		window.innerHeight * 0.23
+	)
 }
 
 let drawLocationModeText = () => {
 	fill("white")
 	textSize(16)
-	text("Location Mode", 385, 188)
+	text("Location Mode", window.innerWidth / 3.95, window.innerHeight / 3.8)
 }
 
 let createElementSetDropdown = () => {
 	elementSetDropdown = createSelect()
-	elementSetDropdown.position(windowWidth * 0.18, height * 0.28)
 	elementSetDropdown.option("First 10 Elements")
 	elementSetDropdown.option("First 18 Elements")
 	elementSetDropdown.option("First 36 Elements")
@@ -170,11 +183,18 @@ let createElementSetDropdown = () => {
 	elementSetDropdown.selected("First 18 Elements")
 }
 
+let setElementSetDropdownPosition = () => {
+	elementSetDropdown.position(
+		window.innerWidth * 0.18,
+		window.innerHeight * 0.28
+	)
+}
+
 let createLocationModeSlider = () => {
 	let div = createDiv()
 	div.class("slider-checkbox")
 	div.id("div-id")
-	div.position(275, 150)
+	div.position(window.innerWidth / 5.5, window.innerHeight / 4.7)
 
 	let input = createInput()
 	input.id("location-check-box")
@@ -203,22 +223,22 @@ let drawElementToFind = () => {
 	rectMode(CENTER)
 	strokeWeight(3)
 	rect(
-		windowWidth * 0.4,
-		height * 0.125,
-		windowWidth / 2.25,
-		height * 0.1,
+		window.innerWidth * 0.4,
+		window.innerHeight * 0.125,
+		window.innerWidth / 2.25,
+		window.innerHeight * 0.1,
 		10
 	)
 	fill("black")
-	textSize(height / 14)
+	textSize(window.innerHeight / 14)
 	text(
 		gamestate.paused
 			? "Press Timer To Resume"
 			: gamestate.timerIsRunning
 			? gamestate.currentElementName
 			: "Press Timer To Start",
-		windowWidth * 0.4,
-		height * 0.125 + height / 36
+		window.innerWidth * 0.4,
+		window.innerHeight * 0.125 + window.innerHeight / 36
 	)
 
 	rectMode(CORNER)
@@ -245,9 +265,9 @@ let createElementClickable = (elem) => {
 	let a = width / 19 / 19
 	let b = width / 19
 	let w = b
-	let h = height * 0.09
+	let h = window.innerHeight * 0.09
 	let x = a * elem.group + (elem.group - 1) * b
-	let y = elem.period * (9 * (height * 0.0105))
+	let y = elem.period * (9 * (window.innerHeight * 0.0105))
 
 	// Using p5.clickable lib
 	// THIS IS CAUSING MEMORY LEAKS? If we use this in the draw loop, we keep making new objects.  Need to make all the objects in setup, then have a seperate function that draws everything in the array.
@@ -260,7 +280,7 @@ let createElementClickable = (elem) => {
 		gamestate.selectedElementSet.indexOf(elem.symbol) != -1
 			? elem.color
 			: "#3c484b"
-	el.textSize = height / 24
+	el.textSize = window.innerHeight / 24
 	el.textScaled = true // scales the text with the button
 
 	el.onPress = () => {
@@ -290,9 +310,9 @@ let createBlankElementClickable = (elem) => {
 	let a = width / 19 / 19
 	let b = width / 19
 	let w = b
-	let h = height * 0.09
+	let h = window.innerHeight * 0.09
 	let x = a * elem.group + (elem.group - 1) * b
-	let y = elem.period * (9 * (height * 0.0105))
+	let y = elem.period * (9 * (window.innerHeight * 0.0105))
 
 	// Using p5.clickable lib
 	let el = new Clickable()
@@ -310,7 +330,7 @@ let createBlankElementClickable = (elem) => {
 				? "purple"
 				: "cyan"
 			: "#3c484b"
-	el.textSize = height / 24
+	el.textSize = window.innerHeight / 24
 	el.textScaled = true // scales the text with the button
 
 	el.onPress = () => {
@@ -408,6 +428,7 @@ let shuffleArr = (a) => {
 let startRound = () => {
 	// Determine which element list is current
 
+	console.log("Starting a new round")
 	setElementSet()
 
 	gamestate.elementList = createElementList(gamestate.elementList)
