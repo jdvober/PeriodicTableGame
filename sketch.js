@@ -30,6 +30,13 @@ let gamestate = {
 	],
 }
 
+let lightPurple = "#D400FF" //light purple
+let lightYellow = "#D4FF00" // light yellow
+let lightBlue = "#E6FBFF" // alt light blue
+let lightRed = "#e82323"
+let lightBrown = "#6d6e3a"
+let deselectedGray = "#3c484b"
+
 let elementClickables = []
 let blankElementClickables = []
 
@@ -53,6 +60,16 @@ function draw() {
 	// Draw each element box
 	if (!gamestate.paused && gamestate.locationMode != true) {
 		elementClickables.forEach((e) => {
+			// Take into account the current element set.
+
+			let newE = {
+				...e,
+				color:
+					gamestate.selectedElementSet.includes(e.symbol) == true
+						? e.startingColor
+						: deselectedGray,
+			}
+			e = newE
 			e.draw()
 		})
 	} else {
@@ -176,6 +193,7 @@ let createElementSetDropdown = () => {
 	elementSetDropdown.option("First 10 Elements")
 	elementSetDropdown.option("First 18 Elements")
 	elementSetDropdown.option("First 36 Elements")
+	elementSetDropdown.option("First 54 Elements")
 	elementSetDropdown.option("Most Common Elements")
 	elementSetDropdown.option("All Elements")
 
@@ -275,11 +293,13 @@ let createElementClickable = (elem) => {
 	el.locate(x, y) // set position
 	el.resize(w, h) // resize button
 	el.text = elem.symbol
+	el.symbol = elem.symbol
 
+	el.startingColor = elem.color
 	el.color =
 		gamestate.selectedElementSet.indexOf(elem.symbol) != -1
 			? elem.color
-			: "#3c484b"
+			: deselectedGray
 	el.textSize = window.innerHeight / 24
 	el.textScaled = true // scales the text with the button
 
@@ -329,7 +349,7 @@ let createBlankElementClickable = (elem) => {
 				: elem.location === "RARE_EARTH"
 				? "purple"
 				: "cyan"
-			: "#3c484b"
+			: deselectedGray
 	el.textSize = window.innerHeight / 24
 	el.textScaled = true // scales the text with the button
 
@@ -352,12 +372,6 @@ let createBlankElementClickable = (elem) => {
 
 	return el
 }
-
-let lightPurple = "#D400FF" //light purple
-let lightYellow = "#D4FF00" // light yellow
-let lightBlue = "#E6FBFF" // alt light blue
-let lightRed = "#e82323"
-let lightBrown = "#6d6e3a"
 
 let getRandNumRange = (min, max) => {
 	return Math.round(Math.random() * (max - min) + min)
@@ -406,6 +420,10 @@ let setElementSet = () => {
 		case "First 36 Elements":
 			gamestate.elementList = elementSetFirst36
 			gamestate.selectedElementSet = elementSetFirst36
+			break
+		case "First 54 Elements":
+			gamestate.elementList = elementSetFirst54
+			gamestate.selectedElementSet = elementSetFirst54
 			break
 		case "Common Elements":
 			gamestate.elementList = elementSetCommonElements
@@ -1707,6 +1725,147 @@ let elementSetCommonElements = [
 	"Cm",
 	"Cf",
 	"Es",
+]
+let elementSetFirst54 = [
+	//
+	//
+	// Period 1
+	//
+	//
+
+	"H",
+
+	"He",
+
+	//
+	//
+	// Period 2
+	//
+	//
+
+	"Li",
+
+	"Be",
+
+	"B",
+
+	"C",
+
+	"N",
+
+	"O",
+
+	"F",
+
+	"Ne",
+
+	//
+	//
+	// Period 3
+	//
+	//
+
+	"Na",
+
+	"Mg",
+
+	"Al",
+
+	"Si",
+
+	"P",
+
+	"S",
+
+	"Cl",
+
+	"Ar",
+
+	//
+	//
+	// Period 4
+	//
+	//
+
+	"K",
+
+	"Ca",
+
+	"Sc",
+
+	"Ti",
+
+	"V",
+
+	"Cr",
+
+	"Mn",
+
+	"Fe",
+
+	"Co",
+
+	"Ni",
+
+	"Cu",
+
+	"Zn",
+
+	"Si",
+
+	"Ga",
+
+	"Ge",
+
+	"As",
+
+	"Se",
+
+	"Br",
+
+	"Kr",
+
+	//
+	//
+	// Period 5
+	//
+	//
+
+	"Rb",
+
+	"Sr",
+
+	"Y",
+
+	"Zr",
+
+	"Nb",
+
+	"Mo",
+
+	"Tc",
+
+	"Ru",
+
+	"Rh",
+
+	"Pd",
+
+	"Ag",
+
+	"Cd",
+
+	"In",
+
+	"Sn",
+
+	"Sb",
+
+	"Te",
+
+	"I",
+
+	"Xe",
 ]
 let elementSetAll = [
 	//
