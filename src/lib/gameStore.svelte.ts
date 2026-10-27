@@ -1,13 +1,14 @@
 // Game Store
 export const gameStore = $state({
-    startTime: 0,
-    time: 0,
-    previousTime: 0,
-    timerIsRunning: false,
-    paused: false,
-    elementList: [] as PeriodicElement[],
-    currentElementName: 'Press Timer To Start',
-    currentElementLocation: 'LEFT' as ElementLocation,
-    locationMode: false,
-    selectedElementSet: [] as string[]
+	startTime: 0,
+	time: 0,
+	previousTime: 0,
+	timerIsRunning: false,
+	paused: false,
+	elementList: [] as PeriodicElement[],
+	currentElementName: 'Press Timer To Start',
+	currentElementLocation: 'LEFT' as ElementLocation,
+	locationMode: false,
+	selectedElementSet: [] as string[],
+	set: 'FIRST_18' as ElementSet,
 });
