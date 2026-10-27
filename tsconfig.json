@@ -9,7 +9,7 @@
 	"compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./*"] // or ["./src/*"] if pointing to src
+            "@/*": ["./src/*"] // or ["./src/*"] if pointing to src
         },
 		"allowJs": true,
 		"checkJs": true,

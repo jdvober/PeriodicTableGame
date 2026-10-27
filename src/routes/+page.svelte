@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { tournamentStore } from "@/src/lib/tournamentStore.svelte";
-	import { gameStore } from "@/src/lib/gameStore.svelte";
-	import "@/src/components/periodicTable";
+	import { tournamentStore } from "@/lib/tournamentStore.svelte";
+	import { gameStore } from "@/lib/gameStore.svelte";
+	import "@/components/periodicTable";
 
 	let selectedDropdownVal = $state("First 18 Elements");
 	let isManageOpen = $state(false);

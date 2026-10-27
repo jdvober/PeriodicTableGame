@@ -1,8 +1,8 @@
-import { elementSetFirst10, elementSetFirst18, elementSetFirst36, elementSetFirst54, elementSetCommonElements } from "@/src/lib/elements";
-import { gameStore } from '@/src/lib/gameStore.svelte'
-import { tournamentStore } from '@/src/lib/tournamentStore.svelte'
-import { elements } from '@/src/lib/elements'
-import { correctSounds } from '@/src/components/periodicTable';
+import { elementSetFirst10, elementSetFirst18, elementSetFirst36, elementSetFirst54, elementSetCommonElements } from "@/lib/elements";
+import { gameStore } from '@/lib/gameStore.svelte'
+import { tournamentStore } from '@/lib/tournamentStore.svelte'
+import { elements } from '@/lib/elements'
+import { correctSounds } from '@/components/periodicTable';
 
 export const setElementSet = () => {
 	switch (gameStore.set) {
