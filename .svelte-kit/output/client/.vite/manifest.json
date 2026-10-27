@@ -1,0 +1,15 @@
+{
+  "node_modules/@sveltejs/kit/src/runtime/client/bundle.js": {
+    "file": "_app/immutable/bundle.C_NzXacT.js",
+    "name": "bundle",
+    "src": "node_modules/@sveltejs/kit/src/runtime/client/bundle.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "node_modules/@sveltejs/kit/src/runtime/client/bundle.js"
+    ]
+  },
+  "style.css": {
+    "file": "_app/immutable/assets/style.D1izyKtp.css",
+    "src": "style.css"
+  }
+}
