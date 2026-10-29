@@ -2,12 +2,28 @@
 	import { tournamentStore } from "@/lib/tournamentStore.svelte";
 	import { gameStore } from "@/lib/gameStore.svelte";
 	import "@/components/periodicTable";
+	import { elements } from "@/lib/elements";
+	import { onMount } from "svelte";
+
+	import {
+		toggleTimer,
+		setElementSet,
+		getCellBackground,
+		handleElementClick,
+		generateBracketStructure,
+		saveTournamentToStorage,
+		loadTournamentFromStorage,
+	} from "@/functions/periodicTableFunctions";
 
 	let selectedDropdownVal = $state("First 18 Elements");
 	let isManageOpen = $state(false);
 	let isBracketOpen = $state(false);
 	let participantsInputText = $state("");
-	let toggleTimer = $state(false);
+
+	onMount(() => {
+		setElementSet();
+		loadTournamentFromStorage();
+	});
 </script>
 
 <header class="game-header">

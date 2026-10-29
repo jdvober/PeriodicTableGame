@@ -1,6 +1,5 @@
 import { setElementSet, loadTournamentFromStorage } from '@/functions/periodicTableFunctions';
 import { Howl } from 'howler'
-import { onMount } from "svelte";
 import correctSound0 from '@/assets/correct_0.wav';
 import correctSound1 from '@/assets/correct_1.wav';
 import correctSound2 from '@/assets/correct_2.wav';
@@ -31,9 +30,5 @@ export const correctSounds = [
     soundCorrect4,
 ];
 
-onMount(() => {
-    setElementSet();
-    loadTournamentFromStorage();
-});
 
 
